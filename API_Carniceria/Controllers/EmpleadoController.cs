@@ -1,4 +1,4 @@
-﻿using API_Carniceria.Entidades;
+﻿using Entidades_Carniceria.Entidades;
 using API_Carniceria.Negocios.EmpleadoNegocios;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

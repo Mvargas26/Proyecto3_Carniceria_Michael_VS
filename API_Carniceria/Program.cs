@@ -1,5 +1,6 @@
 using AccesoDatos_Carniceria;
 using AccesoDatos_Carniceria.ClienteDatos;
+using AccesoDatos_Carniceria.EmpleadoDatos;
 using API_Carniceria.Negocios.ClienteNegocios;
 using API_Carniceria.Negocios.EmpleadoNegocios;
 using API_Carniceria.Negocios.FacturaNegocios;
@@ -35,6 +36,7 @@ builder.Services.AddScoped<IFacturaNegocios, FacturaNegocios>();
 
 builder.Services.AddSingleton<ConexionBD>();
 builder.Services.AddScoped<IClienteDatos,ClienteDatos>();
+builder.Services.AddScoped<IEmpleadoDatos, EmpleadoDatos>();
 
 var app = builder.Build();
 

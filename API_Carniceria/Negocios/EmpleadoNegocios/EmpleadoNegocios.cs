@@ -1,6 +1,6 @@
-﻿using API_Carniceria.Entidades;
-using API_Carniceria.Enums;
-using API_Carniceria.Repositories.Empleado_Repository;
+﻿using AccesoDatos_Carniceria.EmpleadoDatos;
+using Entidades_Carniceria.Entidades;
+using Entidades_Carniceria.Enums;
 using API_Carniceria.Repositories.Factura_Repository;
 using System.Text.RegularExpressions;
 
@@ -8,24 +8,24 @@ namespace API_Carniceria.Negocios.EmpleadoNegocios
 {
     public class EmpleadoNegocios : IEmpleadoNegocios
     {
-        private readonly IEmpleadoRepository _empleadoRepository;
+        private readonly IEmpleadoDatos _empleadoDatos;
         private readonly IFacturaRepository _facturaRepository;
 
-        public EmpleadoNegocios(IEmpleadoRepository empleadoRepository, IFacturaRepository facturaRepository)
+        public EmpleadoNegocios(IEmpleadoDatos empleadoDatos, IFacturaRepository facturaRepository)
         {
-            _empleadoRepository = empleadoRepository;
+            _empleadoDatos = empleadoDatos;
             _facturaRepository = facturaRepository;
-        } // fn
+        }
 
         public async Task<List<Empleado>> ObtenerTodosAsync()
         {
-            return await _empleadoRepository.ObtenerTodosAsync();
-        } // fn
+            return await _empleadoDatos.ObtenerTodosAsync();
+        }//fn ObtenerTodosAsync
 
         public async Task<Empleado?> ObtenerPorIdAsync(Guid id)
         {
-            return await _empleadoRepository.ObtenerPorIdAsync(id);
-        } // fn
+            return await _empleadoDatos.ObtenerPorIdAsync(id);
+        }//fn ObtenerPorIdAsync
 
         public async Task<Empleado?> BuscarPorIdentificacionAsync(string identificacion)
         {
@@ -34,19 +34,29 @@ namespace API_Carniceria.Negocios.EmpleadoNegocios
                 return null;
             }
 
-            return await _empleadoRepository.ObtenerPorIdentificacionAsync(identificacion.Trim());
-        } // fn
+            string idBuscada = identificacion.Trim();
+            List<Empleado> empleados = await _empleadoDatos.ObtenerTodosAsync();
+
+            foreach (Empleado item in empleados)
+            {
+                if (item.Identificacion == idBuscada)
+                {
+                    return item;
+                }
+            }
+
+            return null;
+        }//fn BuscarPorIdentificacionAsync
 
         public async Task<Empleado> CrearAsync(Empleado empleado)
         {
             await ValidarEmpleadoAsync(empleado);
-            await _empleadoRepository.RegistrarAsync(empleado);
-            return empleado;
-        } // fn
+            return await _empleadoDatos.RegistrarAsync(empleado);
+        }
 
         public async Task<bool> ActualizarAsync(Empleado empleado)
         {
-            Empleado? actual = await _empleadoRepository.ObtenerPorIdAsync(empleado.Id);
+            Empleado? actual = await _empleadoDatos.ObtenerPorIdAsync(empleado.Id);
 
             if (actual == null)
             {
@@ -54,34 +64,43 @@ namespace API_Carniceria.Negocios.EmpleadoNegocios
             }
 
             await ValidarEmpleadoAsync(empleado);
-            await _empleadoRepository.ActualizarAsync(empleado);
-            return true;
-        } // fn
+            return await _empleadoDatos.ActualizarAsync(empleado);
+        }//fn ActualizarAsync
 
         public async Task<bool> EliminarAsync(Guid id)
         {
-            Empleado? actual = await _empleadoRepository.ObtenerPorIdAsync(id);
+            Empleado? actual = await _empleadoDatos.ObtenerPorIdAsync(id);
 
             if (actual == null)
             {
                 return false;
             }
 
-            var tieneFacturas = await _facturaRepository.EmpleadoTieneFacturasAsync(id);
+            bool tieneFacturas = await _facturaRepository.EmpleadoTieneFacturasAsync(id);
             if (tieneFacturas)
             {
                 throw new Exception("No se puede eliminar la persona empleada porque tiene facturas asociadas.");
             }
 
-            await _empleadoRepository.EliminarAsync(id);
-            return true;
-        } // fn
+            try
+            {
+                return await _empleadoDatos.EliminarAsync(id);
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("REFERENCE") || ex.Message.Contains("FK_"))
+                {
+                    throw new Exception("No se puede eliminar la persona empleada porque tiene facturas asociadas.");
+                }
+
+                throw;
+            }
+        }//fn EliminarAsync
 
         #region MetodosInternos
 
         private async Task ValidarEmpleadoAsync(Empleado empleado)
         {
-            // Validamos campos de texto 
             if (string.IsNullOrWhiteSpace(empleado.Nombre) || empleado.Nombre.Trim().Length < 3 || empleado.Nombre.Trim().Length > 50)
             {
                 throw new Exception("El nombre es obligatorio y debe tener entre 3 y 50 caracteres.");
@@ -125,10 +144,13 @@ namespace API_Carniceria.Negocios.EmpleadoNegocios
                 throw new Exception("El formato de la identificación no es válido para el tipo seleccionado.");
             }
 
-            bool yaExiste = await _empleadoRepository.YaExisteEstaIdentificacionAsync(empleado.Identificacion, empleado.Id);
-            if (yaExiste)
+            List<Empleado> empleados = await _empleadoDatos.ObtenerTodosAsync();
+            foreach (Empleado item in empleados)
             {
-                throw new Exception("Ya existe una persona empleada registrada con esta identificación.");
+                if (item.Identificacion == empleado.Identificacion && item.Id != empleado.Id)
+                {
+                    throw new Exception("Ya existe una persona empleada registrada con esta identificación.");
+                }
             }
 
             if (empleado.FechaNacimiento > DateTime.Today)
@@ -152,7 +174,7 @@ namespace API_Carniceria.Negocios.EmpleadoNegocios
             }
 
             ValidarRelacionAreaPuesto(empleado.AreaTrabajo, empleado.Puesto);
-        } // fn
+        }//fn ValidarEmpleadoAsync
 
         private void ValidarRelacionAreaPuesto(AreaTrabajo area, Puesto puesto)
         {
@@ -160,7 +182,7 @@ namespace API_Carniceria.Negocios.EmpleadoNegocios
             {
                 throw new Exception("El puesto seleccionado no corresponde al área de trabajo asignada.");
             }
-        } // fn
+        }//fn ValidarRelacionAreaPuesto
 
         private static bool PuestoPerteneceAArea(AreaTrabajo area, Puesto puesto)
         {
@@ -174,9 +196,9 @@ namespace API_Carniceria.Negocios.EmpleadoNegocios
                 AreaTrabajo.Limpieza => puesto is Puesto.PersonalDeLimpieza,
                 _ => false
             };
-        } // fn
+        }//fn PuestoPerteneceAArea
 
         #endregion
-    
-    } // fn class
-}
+    }
+
+}//fn spcae
