@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="AccesoDatos_Carniceria/AccesoDatos_Carniceria.csproj" Id="996ac19e-cb36-447d-9339-73cac1b96f20" />
+  <Project Path="API_Carniceria/API_Carniceria.csproj" />
+  <Project Path="Entidades/Entidades_Carniceria.csproj" Id="f7e6c800-2828-4653-b29a-f642c95b4d2e" />
+  <Project Path="MVC_Carniceria/MVC_Carniceria.csproj" />
+</Solution>
