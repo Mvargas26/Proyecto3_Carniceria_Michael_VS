@@ -1,47 +1,90 @@
-﻿using API_Carniceria.Entidades;
-using API_Carniceria.Enums;
+﻿using AccesoDatos_Carniceria.ProveedorDatos;
 using API_Carniceria.Repositories.Producto_Repository;
 using API_Carniceria.Repositories.Proveedor_Repository;
+using Entidades_Carniceria.Entidades;
+using Entidades_Carniceria.Enums;
 using System.Text.RegularExpressions;
 
 namespace API_Carniceria.Services.Proveedor_Service
 {
     public class ProveedorNegocios : IProveedorNegocios
     {
-        //variables internas
-        private readonly IProveedorRepository _proveedorRepository;
+        private readonly IProveedorDatos _proveedorDatos;
         private readonly IProductoRepository _productoRepository;
 
-        //contru
-        public ProveedorNegocios(IProveedorRepository proveedorRepository, IProductoRepository productoRepository)
+        public ProveedorNegocios(IProveedorDatos proveedorDatos, IProductoRepository productoRepository)
         {
-            _proveedorRepository = proveedorRepository;
+            _proveedorDatos = proveedorDatos;
             _productoRepository = productoRepository;
-        }//fn
+        }
 
-        public Task<IReadOnlyCollection<Proveedor>> ObtenerTodosAsync()
+        public async Task<IReadOnlyCollection<Proveedor>> ObtenerTodosAsync()
         {
-            return _proveedorRepository.ObtenerTodosAsync();
-        }//fn
+            return await _proveedorDatos.ObtenerTodosAsync();
+        }//fin ObtenerTodosAsync
 
-        public Task<Proveedor?> ObtenerPorIdAsync(Guid id)
+        public async Task<Proveedor?> ObtenerPorIdAsync(Guid id)
         {
-            return _proveedorRepository.ObtenerPorIdAsync(id);
-        }//fn
-        public Task<IReadOnlyCollection<Proveedor>> BuscarAsync(string texto, string criterio)
+            return await _proveedorDatos.ObtenerPorIdAsync(id);
+        }//fin ObtenerPorIdAsync
+
+        public async Task<IReadOnlyCollection<Proveedor>> BuscarAsync(string texto, string criterio)
         {
-            return _proveedorRepository.BuscarAsync(texto, criterio);
-        }//fn
+            List<Proveedor> todos = await _proveedorDatos.ObtenerTodosAsync();
+
+            if (string.IsNullOrWhiteSpace(texto))
+            {
+                return todos;
+            }
+
+            string filtro = texto.Trim().ToLower();
+            List<Proveedor> filtrados = new List<Proveedor>();
+
+            foreach (Proveedor item in todos)
+            {
+                bool coincide;
+
+                switch (criterio?.ToLower())
+                {
+                    case "identificacion":
+                        coincide = item.Identificacion.ToLower().Contains(filtro);
+                        break;
+
+                    case "razonsocial":
+                        coincide = item.RazonSocial.ToLower().Contains(filtro);
+                        break;
+
+                    case "contacto":
+                    case "nombrecontacto":
+                        coincide = item.NombreContacto.ToLower().Contains(filtro);
+                        break;
+
+                    default:
+                        coincide = item.Identificacion.ToLower().Contains(filtro) ||
+                                   item.RazonSocial.ToLower().Contains(filtro) ||
+                                   item.NombreContacto.ToLower().Contains(filtro);
+                        break;
+                }
+
+                if (coincide)
+                {
+                    filtrados.Add(item);
+                }
+            }
+
+            return filtrados;
+
+        }//fin BuscarAsync
 
         public async Task<Proveedor> CrearAsync(Proveedor proveedor)
         {
             await ValidarProveedorAsync(proveedor);
-            return await _proveedorRepository.CrearAsync(proveedor);
-        }//fn
+            return await _proveedorDatos.RegistrarAsync(proveedor);
+        }//fin CrearAsync
 
         public async Task<bool> ActualizarAsync(Proveedor proveedor)
         {
-            Proveedor? actual = await _proveedorRepository.ObtenerPorIdAsync(proveedor.Id);
+            Proveedor? actual = await _proveedorDatos.ObtenerPorIdAsync(proveedor.Id);
 
             if (actual == null)
             {
@@ -49,12 +92,12 @@ namespace API_Carniceria.Services.Proveedor_Service
             }
 
             await ValidarProveedorAsync(proveedor);
-            return await _proveedorRepository.ActualizarAsync(proveedor);
-        }//fn
+            return await _proveedorDatos.ActualizarAsync(proveedor);
+        }//fin ActualizarAsync
 
         public async Task<bool> EliminarAsync(Guid id)
         {
-            Proveedor? actual = await _proveedorRepository.ObtenerPorIdAsync(id);
+            Proveedor? actual = await _proveedorDatos.ObtenerPorIdAsync(id);
 
             if (actual == null)
             {
@@ -62,16 +105,36 @@ namespace API_Carniceria.Services.Proveedor_Service
             }
 
             var productos = await _productoRepository.ObtenerTodosAsync();
-            bool tieneProductosAsociados = productos.Any(p => p.ProveedorId == id);
+            bool tieneProductosAsociados = false;
+
+            foreach (var prod in productos)
+            {
+                if (prod.ProveedorId == id)
+                {
+                    tieneProductosAsociados = true;
+                    break;
+                }
+            }
 
             if (tieneProductosAsociados)
             {
                 throw new Exception("No es posible eliminar el proveedor porque se encuentra asociado como proveedor principal de uno o más productos.");
             }
 
-            return await _proveedorRepository.EliminarAsync(id);
-        } // fn
+            try
+            {
+                return await _proveedorDatos.EliminarAsync(id);
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("REFERENCE") || ex.Message.Contains("FK_"))
+                {
+                    throw new Exception("No es posible eliminar el proveedor porque se encuentra asociado como proveedor principal de uno o más productos.");
+                }
 
+                throw;
+            }
+        }//
 
         #region MetodosInternos
 
@@ -105,8 +168,7 @@ namespace API_Carniceria.Services.Proveedor_Service
                 throw new Exception("El formato de la identificación no es válido para el tipo seleccionado.");
             }
 
-            var proveedores = await _proveedorRepository.ObtenerTodosAsync();
-
+            List<Proveedor> proveedores = await _proveedorDatos.ObtenerTodosAsync();
             bool identificacionRepetida = false;
 
             foreach (Proveedor existente in proveedores)
@@ -130,9 +192,10 @@ namespace API_Carniceria.Services.Proveedor_Service
             {
                 throw new Exception("El teléfono debe contener exactamente 8 dígitos numéricos.");
             }
-        }//fn
-           
+        }//fin ValidarProveedorAsync
+
         #endregion
 
-    }// fn class
+    }//fin class
+
 }// fn space

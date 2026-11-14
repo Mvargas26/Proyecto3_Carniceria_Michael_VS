@@ -1,5 +1,5 @@
-﻿using API_Carniceria.Entidades;
-using API_Carniceria.Enums;
+﻿using Entidades_Carniceria.Entidades;
+using Entidades_Carniceria.Enums;
 
 namespace API_Carniceria.Repositories.Proveedor_Repository
 {
@@ -114,6 +114,8 @@ namespace API_Carniceria.Repositories.Proveedor_Repository
                 FrecuenciaEntrega = FrecuenciaEntrega.ContraPedido
             });
         }
+
+       
 
         #endregion
 
