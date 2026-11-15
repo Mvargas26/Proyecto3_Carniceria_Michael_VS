@@ -1,6 +1,6 @@
-﻿using AccesoDatos_Carniceria.ProveedorDatos;
+﻿using AccesoDatos_Carniceria.ProductoDatos;
+using AccesoDatos_Carniceria.ProveedorDatos;
 using API_Carniceria.Repositories.Producto_Repository;
-using API_Carniceria.Repositories.Proveedor_Repository;
 using Entidades_Carniceria.Entidades;
 using Entidades_Carniceria.Enums;
 using System.Text.RegularExpressions;
@@ -10,12 +10,12 @@ namespace API_Carniceria.Services.Proveedor_Service
     public class ProveedorNegocios : IProveedorNegocios
     {
         private readonly IProveedorDatos _proveedorDatos;
-        private readonly IProductoRepository _productoRepository;
+        private readonly IProductoDatos _productoDatos;
 
-        public ProveedorNegocios(IProveedorDatos proveedorDatos, IProductoRepository productoRepository)
+        public ProveedorNegocios(IProveedorDatos proveedorDatos, IProductoDatos productoDatos)
         {
             _proveedorDatos = proveedorDatos;
-            _productoRepository = productoRepository;
+            _productoDatos = productoDatos;
         }
 
         public async Task<IReadOnlyCollection<Proveedor>> ObtenerTodosAsync()
@@ -104,7 +104,7 @@ namespace API_Carniceria.Services.Proveedor_Service
                 return false;
             }
 
-            var productos = await _productoRepository.ObtenerTodosAsync();
+            var productos = await _productoDatos.ObtenerTodosAsync();
             bool tieneProductosAsociados = false;
 
             foreach (var prod in productos)

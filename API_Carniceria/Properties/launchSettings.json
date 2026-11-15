@@ -2,7 +2,10 @@
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
     "http": {
-      "commandName": "Project",
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "exec bin/Debug/net10.0/API_Carniceria.dll --urls http://localhost:5139",
+      "workingDirectory": "$(ProjectDir)",
       "dotnetRunMessages": true,
       "launchBrowser": false,
       "applicationUrl": "http://localhost:5139",

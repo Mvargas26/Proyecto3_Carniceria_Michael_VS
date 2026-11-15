@@ -1,4 +1,4 @@
-﻿using API_Carniceria.Entidades;
+﻿using Entidades_Carniceria.Entidades;
 
 namespace API_Carniceria.Negocios.ProductoNegocios
 {
