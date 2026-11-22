@@ -1,5 +1,5 @@
 ﻿using AccesoDatos_Carniceria.ClienteDatos;
-using API_Carniceria.Repositories.Factura_Repository;
+using AccesoDatos_Carniceria.FacturaDatos;
 using Entidades_Carniceria.Entidades;
 using Entidades_Carniceria.Enums;
 using System.Text.RegularExpressions;
@@ -9,12 +9,11 @@ namespace API_Carniceria.Negocios.ClienteNegocios
     public class ClienteNegocios : IClienteNegocios
     {
         private readonly IClienteDatos _clienteDatos;
-        private readonly IFacturaRepository _facturaRepository;
-
-        public ClienteNegocios(IClienteDatos clienteDatos, IFacturaRepository facturaRepository)
+        private readonly IFacturaDatos _facturaDatos;
+        public ClienteNegocios(IClienteDatos clienteDatos, IFacturaDatos facturaDatos)
         {
             _clienteDatos = clienteDatos;
-            _facturaRepository = facturaRepository;
+            _facturaDatos = facturaDatos;
         }
 
         public async Task<List<Cliente>> ObtenerTodosAsync()
@@ -76,7 +75,7 @@ namespace API_Carniceria.Negocios.ClienteNegocios
                 return false;
             }
 
-            bool tieneFacturas = await _facturaRepository.ClienteTieneFacturasAsync(id);
+            bool tieneFacturas = await _facturaDatos.ClienteTieneFacturasAsync(id);
             if (tieneFacturas)
             {
                 throw new Exception("No se puede eliminar la persona cliente porque tiene facturas asociadas.");

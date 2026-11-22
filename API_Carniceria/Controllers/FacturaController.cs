@@ -1,4 +1,4 @@
-﻿using API_Carniceria.Entidades;
+﻿using Entidades_Carniceria.Entidades;
 using API_Carniceria.Negocios.FacturaNegocios;
 using Microsoft.AspNetCore.Mvc;
 
@@ -145,5 +145,11 @@ namespace API_Carniceria.Controllers
             }
         }//fn anular
 
+        [HttpGet("reporte-semanal")]
+        public async Task<IActionResult> ObtenerReporteSemanal()
+        {
+            var ventas = await _facturaNegocios.ObtenerVentasSemanalesAsync();
+            return Ok(ventas);
+        }//fn reporte-semanal
     }//fn class
 }//fn space

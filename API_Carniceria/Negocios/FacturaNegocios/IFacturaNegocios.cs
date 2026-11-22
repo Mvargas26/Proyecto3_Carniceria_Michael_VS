@@ -1,4 +1,4 @@
-﻿using API_Carniceria.Entidades;
+﻿using Entidades_Carniceria.Entidades;
 
 namespace API_Carniceria.Negocios.FacturaNegocios
 {
@@ -13,6 +13,7 @@ namespace API_Carniceria.Negocios.FacturaNegocios
         Task<bool> EliminarAsync(Guid id);
         Task<Factura> PagarAsync(Guid id);
         Task<Factura> AnularAsync(Guid id);
+        Task<List<Factura>> ObtenerVentasSemanalesAsync();
 
     }//fn class
 }//fn space

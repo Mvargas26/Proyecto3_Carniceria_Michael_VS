@@ -1,11 +1,10 @@
 ﻿using AccesoDatos_Carniceria.ProductoDatos;
 using AccesoDatos_Carniceria.ProveedorDatos;
-using API_Carniceria.Repositories.Producto_Repository;
 using Entidades_Carniceria.Entidades;
 using Entidades_Carniceria.Enums;
 using System.Text.RegularExpressions;
 
-namespace API_Carniceria.Services.Proveedor_Service
+namespace API_Carniceria.Negocios.ProveedorNegocios
 {
     public class ProveedorNegocios : IProveedorNegocios
     {

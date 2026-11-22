@@ -1,6 +1,6 @@
 ﻿using Entidades_Carniceria.Entidades;
 
-namespace API_Carniceria.Services.Proveedor_Service
+namespace API_Carniceria.Negocios.ProveedorNegocios
 {
     public interface IProveedorNegocios
     {

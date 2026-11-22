@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Entidades_Carniceria.Entidades;
-using API_Carniceria.Services.Proveedor_Service;
+using API_Carniceria.Negocios.ProveedorNegocios;
 
 namespace API_Carniceria.Controllers
 {
