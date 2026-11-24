@@ -163,5 +163,23 @@ namespace MVC_Carniceria.Services
                 throw new Exception("No se pudo conectar con el servicio. Intente más tarde.");
             }
         } // fin AnularAsync
+
+        public async Task<List<FacturaViewModel>> ObtenerReporteSemanalAsync()
+        {
+            try
+            {
+                var ventas = await _clienteHttp.GetFromJsonAsync<List<FacturaViewModel>>("api/Factura/ReporteSemanal");
+                return ventas ?? new List<FacturaViewModel>();
+            }
+            catch (HttpRequestException)
+            {
+                throw new Exception("No se pudo conectar con el servicio. Intente más tarde.");
+            }
+        } // fin ObtenerReporteSemanalAsync
+
+
+
+
+
     } // fin class
 }

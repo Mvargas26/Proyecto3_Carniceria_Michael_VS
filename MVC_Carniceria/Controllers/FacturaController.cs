@@ -271,6 +271,37 @@ namespace MVC_Carniceria.Controllers
             return RedirectToAction("ListarFacturas");
         }//fn AnularFactura
 
+        [HttpGet]
+        public async Task<IActionResult> ReporteVentasSemanales()
+        {
+            DateTime hoy = DateTime.Today;
+            int diasDesdeLunes = ((int)hoy.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+            DateTime inicioSemana = hoy.AddDays(-diasDesdeLunes);
+            DateTime finSemana = inicioSemana.AddDays(6);
+
+            ViewBag.InicioSemana = inicioSemana;
+            ViewBag.FinSemana = finSemana;
+
+            try
+            {
+                var ventas = await _facturaApiService.ObtenerReporteSemanalAsync();
+                ViewBag.TotalVendidoSemana = ventas.Sum(v => v.Total);
+
+                if (!ventas.Any())
+                {
+                    ViewBag.MensajeInformativo = "No se registran facturas pagadas durante la semana actual.";
+                }
+
+                return View(ventas);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.MensajeError = ex.Message;
+                ViewBag.TotalVendidoSemana = 0m;
+                return View(new List<FacturaViewModel>());
+            }
+        }//fn ReporteVentasSemanales
+
         #region MetodosInternos
 
         private async Task CargarListasDesplegables()

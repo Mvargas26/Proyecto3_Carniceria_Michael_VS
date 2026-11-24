@@ -368,6 +368,11 @@ namespace AccesoDatos_Carniceria.FacturaDatos
                         }
                     }
                 }
+
+                foreach (Factura factura in ventas)
+                {
+                    factura.Detalles = await ObtenerDetallesInternoAsync(conexion, factura.Id);
+                }
             }
 
             return ventas;

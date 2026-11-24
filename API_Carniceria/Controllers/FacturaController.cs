@@ -145,7 +145,7 @@ namespace API_Carniceria.Controllers
             }
         }//fn anular
 
-        [HttpGet("reporte-semanal")]
+        [HttpGet("ReporteSemanal")]
         public async Task<IActionResult> ObtenerReporteSemanal()
         {
             var ventas = await _facturaNegocios.ObtenerVentasSemanalesAsync();
