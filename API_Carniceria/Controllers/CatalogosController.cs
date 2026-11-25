@@ -1,5 +1,5 @@
-﻿using API_Carniceria.Enums;
-using API_Carniceria.Enums.Helpers;
+﻿using Entidades_Carniceria.Enums;
+using Entidades_Carniceria.Enums.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
